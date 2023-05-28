@@ -1,0 +1,55 @@
+import random
+import math
+
+class RSA:
+    def __init__(self):
+        self.e = self.d = self.p = self.q = self.phi = 0
+
+    def __egcd(self, a, b):
+        if a == 0:
+            return (b, 0, 1)
+        else:
+            g, y, x = self.__egcd(b % a, a)
+            return (g, x - (b // a) * y, y)
+
+    def __modinv(self, a, m):
+        g, x, y = self.__egcd(a, m)
+        if g != 1:
+            raise Exception('modular inverse does not exist')
+        else:
+            return x % m
+
+    def encrypt(self, m, keyPair=None):
+        if (keyPair == None):
+            keyPair[0] = self.e
+            keyPair[1] = self.n
+
+        return pow(m, keyPair[0], keyPair[1])
+
+    def decrypt(self, c, keyPair=None):
+        if (keyPair == None):
+            keyPair[0] = self.d
+            keyPair[1] = self.n
+
+        return pow(c, keyPair[0], keyPair[1])
+
+    def generateKeys(self, p, q, e=3):
+        self.p = p
+        self.q = q
+
+        self.n = self.p * self.q
+        self.phi = (self.p - 1) * (self.q - 1)
+        self.e = e
+        self.d = self.__modinv(self.e, self.phi)
+
+        if (self.phi % self.e == 0):
+            raise Exception('invalid values for p and q')
+
+    def getMaxMessageBits(self):
+        return self.n.bit_length()
+
+    def getPublicKey(self):
+        return self.e, self.n
+
+    def getPrivateKey(self):
+        return self.d, self.n
